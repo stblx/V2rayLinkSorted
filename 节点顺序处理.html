@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <a>源数据：</a><br>
+    <textarea id="original_link" cols="100" rows="10"></textarea>
+    <br>
+    <button id="btn_operate" onclick="func_btn_operate()">操作</button>
+    <br><br>
+    <a>下面是输出结果：</a>
+    <button type="button" id="btn_Share" onclick="AutoCopy('#btn_Share')">复制结果</button>
+    <span id="spanCopyStatue"></span>
+    <br>
+    <textarea id="final_link" cols="100" rows="10"></textarea>
+    
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+<script>
+    function func_btn_operate() {
+        //document.getElementById("final_link").innerText = document.getElementById("original_link").value;
+        var str_original_link = document.getElementById("original_link").value;
+
+        var arr_original_link_spilted = str_original_link.split('\n');
+        //%E7%BE%8E%E5%9B%BD+CloudFlare%E8%8A%82%E7%82%B9
+
+        var arr_contain_cloudflare = [];
+        var arr_not_contain_cloudflare = [];
+        var arr_contain_Vmess = [];
+
+        for (let i = 0; i < arr_original_link_spilted.length; i++) {
+            if (arr_original_link_spilted[i].indexOf("CloudFlare") != -1) {
+                arr_contain_cloudflare.push(arr_original_link_spilted[i]);
+            } else if (arr_original_link_spilted[i].indexOf("vmess") != -1) {
+                arr_contain_Vmess.push(arr_original_link_spilted[i]);
+            } else {
+                arr_not_contain_cloudflare.push(arr_original_link_spilted[i]);
+            }
+        }
+
+        for (let i = 0; i < arr_contain_Vmess.length; i++) {
+            let VmessData = atob(arr_contain_Vmess[i].split('//')[1]);
+            if (VmessData.indexOf('\u7f8e\u56fd CloudFlare\u8282\u70b9') != -1) {
+                arr_contain_cloudflare.push(arr_contain_Vmess[i]);
+            } else {
+                arr_not_contain_cloudflare.push(arr_contain_Vmess[i]);
+            }
+        }
+
+
+        var str_final = "";
+
+        for (let i = 0; i < arr_not_contain_cloudflare.length; i++) {
+            str_final = str_final + arr_not_contain_cloudflare[i] + " \r\n";
+        }
+
+        for (let i = 0; i < arr_contain_Vmess.length; i++) {
+            str_final = str_final + arr_contain_Vmess[i] + " \r\n";
+        }
+
+
+        for (let i = 0; i < arr_contain_cloudflare.length; i++) {
+            str_final = str_final + arr_contain_cloudflare[i] + " \r\n";
+        }
+
+        document.getElementById("final_link").value = str_final;
+    }
+
+    function AutoCopy(element) {
+        var clipboard = new ClipboardJS(element, {      //绑定元素id
+            text: function () {
+                var str = document.getElementById("final_link").value;
+                return str;
+            },
+        });
+        clipboard.on("success", function (e) {
+            document.getElementById('spanCopyStatue').innerText = "复制成功";
+        });
+        clipboard.on("error", function (e) {
+            document.getElementById('spanCopyStatue').innerText = "复制失败";
+        });
+    }
+</script>
+
+</html>
